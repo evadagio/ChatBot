@@ -1,2 +1,2 @@
 # ChatBot
-MS Bot FW ChatBOt
+MS Bot FW ChatBot
