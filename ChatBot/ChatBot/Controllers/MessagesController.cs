@@ -2,6 +2,8 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using ChatBot.Dialogs;
+using ChatBot.Models;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 
@@ -26,6 +28,11 @@ namespace ChatBot
             }
             var response = Request.CreateResponse(HttpStatusCode.OK);
             return response;
+        }
+
+        internal static IDialog<FTService> MakeLuisDialog()
+        {
+            return Chain.From(() => new LUISDialog(FTService.BuildForm));
         }
 
         private Activity HandleSystemMessage(Activity message)
