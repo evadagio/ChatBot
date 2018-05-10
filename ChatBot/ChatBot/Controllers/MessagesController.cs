@@ -20,7 +20,7 @@ namespace ChatBot
         {
             if (activity.Type == ActivityTypes.Message)
             {
-                await Conversation.SendAsync(activity, () => new Dialogs.RootDialog());
+                await Conversation.SendAsync(activity, () => new RootDialog(true));
             }
             else
             {
@@ -30,10 +30,10 @@ namespace ChatBot
             return response;
         }
 
-        internal static IDialog<FTService> MakeLuisDialog()
+        /*internal static IDialog<FTService> MakeLuisDialog()
         {
             return Chain.From(() => new LUISDialog(FTService.BuildForm));
-        }
+        }*/
 
         private Activity HandleSystemMessage(Activity message)
         {
