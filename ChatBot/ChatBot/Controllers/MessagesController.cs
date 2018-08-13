@@ -20,7 +20,7 @@ namespace ChatBot
         {
             if (activity.Type == ActivityTypes.Message)
             {
-                await Conversation.SendAsync(activity, () => new RootDialog(true));
+                await Conversation.SendAsync(activity, () => new RootDialog());
             }
             else
             {

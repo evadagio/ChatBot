@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Sites>
+  <Site key="FTBoard" name="Fulfillment Dashboard">
+    <Enviroment key="Staging" link="https://fulfillment-dashboard.pnistaging.com/"/>
+    <Enviroment key="Production" link="https://fulfillment-dashboard.pnimedia.com/"/>
+  </Site>
+  <Site key="Kibana" name="Kibana">
+    <Enviroment key="Staging" link="https://b3f3ad2ed530485c31ba565d8e1153ca.us-east-1.aws.found.io"/>
+    <Enviroment key="Production" link="https://1a5ce950fbd8aaa5ae217310eb29a984.us-east-1.aws.found.io"/>
+  </Site>
+  <Site key="Azure" name="Azure Portal">
+    <Enviroment key="default" link="https://portal.azure.com"/>
+  </Site>
+</Sites>
