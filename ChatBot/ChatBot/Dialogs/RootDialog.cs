@@ -15,10 +15,6 @@ namespace ChatBot.Dialogs
         public bool Reset;
         public static Entities Entity = new Entities();
         public static WebSites WebSites = new WebSites();
-        /*public RootDialog(bool reset)
-        {
-            this.Reset = reset;
-        }*/
         public async Task StartAsync(IDialogContext context)
         {
             await context.PostAsync("Hi I'm FT Bot");
@@ -35,7 +31,7 @@ namespace ChatBot.Dialogs
                 switch (message.Text)
                 {
                     case "Sites":
-                        handleSites(context);
+                        HandleSites(context);
                         break;
                     case "Report":
                         context.Call(FormDialog.FromForm(Report.BuildForm, FormOptions.PromptInStart), ResumeAll);
@@ -50,13 +46,6 @@ namespace ChatBot.Dialogs
                 await context.PostAsync(CreateMenu(context));
             }
         }
-
-        private async Task ResumeAll(IDialogContext context, IAwaitable<Report> result)
-        {
-           context.Done("");
-       
-        }
-
 
         private async Task ResumeSite(IDialogContext context, IAwaitable<string> result)
         {
@@ -77,7 +66,7 @@ namespace ChatBot.Dialogs
             await context.PostAsync(reply);
         }
 
-        private void handleSites(IDialogContext context)
+        private void HandleSites(IDialogContext context)
         {
 
             var options = new List<string>();
@@ -111,6 +100,11 @@ namespace ChatBot.Dialogs
             return reply;
         }
 
+
+        private async Task ResumeAll(IDialogContext context, IAwaitable<Report> result)
+        {
+            context.Done("");
+        }
 
     }
 

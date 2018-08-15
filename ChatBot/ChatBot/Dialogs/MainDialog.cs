@@ -4,7 +4,6 @@ using System.Web.UI;
 using ChatBot.Models;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.FormFlow;
-using Microsoft.Bot.Connector;
 
 namespace ChatBot.Dialogs
 {
