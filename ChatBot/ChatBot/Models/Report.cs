@@ -21,14 +21,13 @@ namespace ChatBot.Models
         Unable = 4
     }
 
-    public enum BugType
+    public enum Priority
     {
-        Security = 1,
-        Crtitical = 2,
-        Major = 3,
-        Minor = 4,
-        Trivial = 5,
-        Other = 6
+        Crtitical = 1,
+        Major = 2,
+        Minor = 3,
+        Trivial = 4,
+        Other = 5
     }
 
     [Serializable]
@@ -39,8 +38,8 @@ namespace ChatBot.Models
         public string Description;
         [Prompt("What is your name?")]
         public string Name;
-        public Enviroment? Enviroment;
-        public List<BugType> Bug;
+        public Enviroment Enviroment;
+        public Priority Priority;
         public Reproducibility Reproduce;
         
         public static IForm<Report> BuildForm()

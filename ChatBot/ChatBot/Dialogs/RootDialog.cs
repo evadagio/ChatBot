@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Hosting;
-using System.Web.Http;
-using System.Xml.Linq;
 using ChatBot.Models;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
+using Microsoft.Bot.Builder.FormFlow;
 
 namespace ChatBot.Dialogs
 {
@@ -15,7 +13,8 @@ namespace ChatBot.Dialogs
     public class RootDialog : IDialog<object>
     {
         public bool Reset;
-
+        public static Entities Entity = new Entities();
+        public static WebSites WebSites = new WebSites();
         /*public RootDialog(bool reset)
         {
             this.Reset = reset;
@@ -23,137 +22,83 @@ namespace ChatBot.Dialogs
         public async Task StartAsync(IDialogContext context)
         {
             await context.PostAsync("Hi I'm FT Bot");
-            //await Respond(context);
             await context.PostAsync(CreateMenu(context));
             context.Wait(MessageReceivedAsync);
         }
 
-        private static async Task Respond(IDialogContext context)
-        {
-            /*var userName = String.Empty;
-            context.UserData.TryGetValue<string>("Name", out userName);
-            if (string.IsNullOrEmpty(userName))
-            {
-                await context.PostAsync("What is your name?");
-                context.UserData.SetValue<bool>("GetName", true);
-            }
-            else
-            {
-                await context.PostAsync(String.Format("Hi {0}.  How are you today?", userName));
-            }*/
-
-            //await context.PostAsync(CreateMenu(context));
-
-        }
 
         public async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
             var message = await argument;
-            var userName = String.Empty;
-            var getName = false;
-            context.UserData.TryGetValue<string>("Name", out userName);
-            context.UserData.TryGetValue<bool>("GetName", out getName);
-            
-            if (getName)
+            if (message.Text != null && Entity.Items.Contains(message.Text))
             {
-                userName = message.Text;
-                context.UserData.SetValue<string>("Name", userName);
-                context.UserData.SetValue<bool>("GetName", false);
-                //await Respond(context);
-                context.Wait(MessageReceivedAsync);
+                switch (message.Text)
+                {
+                    case "Sites":
+                        handleSites(context);
+                        break;
+                    case "Report":
+                        context.Call(FormDialog.FromForm(Report.BuildForm, FormOptions.PromptInStart), ResumeAll);
+                        break;
+                    case "Help":
+                        await context.PostAsync(Entity.Help);
+                        break;
+                }
             }
-            /*else
+            else
             {
-                context.Done(message);
-            }*/
-
-
+                await context.PostAsync(CreateMenu(context));
+            }
         }
 
-        /* public async Task StartAsync(IDialogContext context)
-         {
-             //await Respond(context);
-             context.Wait(MessageReceivedAsync);
-         }
-
-         public async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
-         {
-             var message = await argument;
-             var res = Reset ? "initial" : message.Text;
-             switch (res)
-             {
-                 case "site":
-                     var attachments = new List<Attachment>();
-                     var actions = new List<CardAction>();
-                     var items = new Dictionary<string,string>();
-                     items["Fulfillment Dashboard - STG"] = "https://fulfillment-dashboard.pnistaging.com/";
-                     items["Fulfillment Dashboard - PRD"] = "https://fulfillment-dashboard.pnimedia.com/";
-                     items["Kibana - STG"] = "https://b3f3ad2ed530485c31ba565d8e1153ca.us-east-1.aws.found.io";
-                     items["Kibana - PRD"] = "https://1a5ce950fbd8aaa5ae217310eb29a984.us-east-1.aws.found.io";
-
-                     foreach (var item in items)
-                     {
-                         actions.Add(new CardAction(ActionTypes.OpenUrl, item.Key, value:item.Value));
-                     }
-                     await context.PostAsync(CreateActivity(context,actions,attachments));
-                     break;
-                 case "help":
-                     await context.PostAsync("Help page on construction!");
-                     break;
-                 case "initial":
-                     await context.PostAsync($"Hi {context.MakeMessage().Recipient.Name}, Welcome to FT-Bot!");
-                     var attach = new List<Attachment>();
-                     var act = new List<CardAction>();
-                     var its = new List<string>()
-                     {
-                         "site",
-                         "help",
-                         "other"
-                     };
-                     foreach (var it in its)
-                     {
-                         act.Add(new CardAction(ActionTypes.ImBack, it, text:it, value:it));
-                     }
-                     await context.PostAsync(CreateActivity(context, act, attach));
-                     break;
-                 default:
-                     await context.PostAsync("WTF?");
-                     break;
-             }
-             Reset = false;
-             context.Done(message);
-         }
-        /* private static async Task Respond(IDialogContext context, string message = "initial")
-         {
-
-             //context.Done(message);
-         }#1#
-         */
-        private static IMessageActivity CreateActivity(IDialogContext context, List<CardAction> actions, List<Attachment> attachments)
+        private async Task ResumeAll(IDialogContext context, IAwaitable<Report> result)
         {
+           context.Done("");
+       
+        }
+
+
+        private async Task ResumeSite(IDialogContext context, IAwaitable<string> result)
+        {
+            var site = await result;
+            var attachments = new List<Attachment>();
+            //var actions = site.Enviroments.Select(item => new CardAction(ActionTypes.OpenUrl, item.Key, value: item.Link)).ToList();
+            var actions = WebSites.GetEnviroments(site)
+                .Select(item => new CardAction(ActionTypes.OpenUrl, item.Key, value: item.Link)).ToList();
             var heroCard = new HeroCard()
             {
                 Buttons = actions
             };
             attachments.Add(heroCard.ToAttachment());
             var reply = context.MakeMessage();
-            reply.Text = "You may select from the following options.";
+            reply.Text = string.Empty;
             reply.AttachmentLayout = AttachmentLayoutTypes.List;
             reply.Attachments = attachments;
-            return reply;
+            await context.PostAsync(reply);
+        }
+
+        private void handleSites(IDialogContext context)
+        {
+
+            var options = new List<string>();
+            var descriptions = new List<string>();
+            foreach (var site in WebSites.GetSites())
+            {
+                options.Add(site.Key);
+                descriptions.Add(site.Name);
+            }
+
+            PromptDialog.Choice(context, ResumeSite, options, "  ", descriptions: descriptions);
         }
 
         private static IMessageActivity CreateMenu(IDialogContext context)
         {
             var attachments = new List<Attachment>();
             var actions = new List<CardAction>();
-            var c = HostingEnvironment.ApplicationPhysicalPath;
-            Entities entity = new Entities();
-            
-            actions.Add(new CardAction(ActionTypes.ImBack, "Sites", value: entity.Sites));
-            actions.Add(new CardAction(ActionTypes.ImBack, "Report", value: entity.Report));
-            actions.Add(new CardAction(ActionTypes.ImBack, "Help", value:"Help"));
-            
+            foreach (var item in Entity.Items)
+            {
+                actions.Add(new CardAction(ActionTypes.PostBack, item, value: item));
+            }
             var heroCard = new HeroCard()
             {
                 Buttons = actions
@@ -165,6 +110,8 @@ namespace ChatBot.Dialogs
             reply.Attachments = attachments;
             return reply;
         }
+
+
     }
 
   

@@ -15,9 +15,11 @@ namespace ChatBot
         public void Test()
         {
             Entities a = new Entities();
-            var b = a.Sites;
-            var c = b.Site;
-            
+            var aa = a.GetType().GetProperties();
+            foreach (var i in aa)
+            {
+                var cc = i.GetValue(typeof(Entities), null);
+            }
 
         }
     }
